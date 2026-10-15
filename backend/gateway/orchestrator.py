@@ -50,7 +50,7 @@ class GatewayOrchestrator:
         t0 = time.perf_counter()
         request_id = f"req_{uuid.uuid4().hex[:12]}"
 
-        # Step 1: Input Inspection across PII, Secrets, and Injections
+        # Step 1: Input Inspection across Secrets, Injection, and PII
         all_spans: List[DetectedSpan] = []
         all_spans.extend(secret_scanner.scan(req.message))
         all_spans.extend(injection_detector.detect(req.message))
@@ -61,11 +61,12 @@ class GatewayOrchestrator:
         t_gateway_inspected = time.perf_counter()
         gateway_overhead_ms = round((t_gateway_inspected - t0) * 1000, 2)
 
-        # Step 3: Enforce BLOCK-BEFORE-FORWARD Guarantee
+        # Step 3: Enforce BLOCK-BEFORE-FORWARD Guarantee (FR-005)
+        # Cardinal Rule: Under NO circumstance should upstream provider adapter be called when BLOCKED!
         if decision.action == PolicyAction.BLOCK:
             total_time_ms = round((time.perf_counter() - t0) * 1000, 2)
             
-            # Log audit event with zero raw content
+            # Log privacy-preserving metadata audit event with zero raw content
             audit_logger.log(AuditEvent(
                 event_id=request_id,
                 tenant_id=user.tenant_id,
@@ -73,10 +74,11 @@ class GatewayOrchestrator:
                 action_taken="BLOCK",
                 rule_categories=decision.categories_triggered,
                 policy_version=decision.policy_version,
-                provider_called=False, # Verified: LLM never called!
+                provider_called=False,  # Verified: LLM provider is NEVER called
                 gateway_latency_ms=gateway_overhead_ms,
                 total_latency_ms=total_time_ms,
-                provider_status_code=403
+                provider_status_code=403,
+                retrieval_scopes_used=[]
             ))
 
             return GatewayResponse(
@@ -89,10 +91,11 @@ class GatewayOrchestrator:
                 categories_detected=decision.categories_triggered,
                 gateway_latency_ms=gateway_overhead_ms,
                 total_latency_ms=total_time_ms,
-                provider_called=False
+                provider_called=False,
+                retrieved_doc_titles=[]
             )
 
-        # Step 4: Handle Authorized Retrieval / RAG if requested
+        # Step 4: Handle Authorized Pre-Retrieval ACL / RAG if requested
         prompt_to_send = decision.sanitized_prompt or req.message
         retrieved_titles: List[str] = []
         if req.retrieval_scope:
@@ -115,9 +118,10 @@ class GatewayOrchestrator:
         total_time_ms = round((t_end - t0) * 1000, 2)
 
         # Step 7: Record Privacy Audit Event
-        combined_categories = list(set(decision.categories_triggered + output_warnings))
-        final_action = "MASK" if decision.action == PolicyAction.MASK or was_modified else "ALLOW"
-        
+        combined_categories = sorted(list(set(decision.categories_triggered + output_warnings)))
+        final_action = "MASK" if (decision.action == PolicyAction.MASK or was_modified) else "ALLOW"
+        final_status = "masked" if final_action == "MASK" else "allowed"
+
         audit_logger.log(AuditEvent(
             event_id=request_id,
             tenant_id=user.tenant_id,
@@ -134,7 +138,7 @@ class GatewayOrchestrator:
 
         return GatewayResponse(
             request_id=request_id,
-            status=final_action.lower(),
+            status=final_status,
             policy_version=decision.policy_version,
             response=final_text,
             sanitized_prompt_forwarded=prompt_to_send if decision.action == PolicyAction.MASK else "(identical to user prompt)",
