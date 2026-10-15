@@ -11,7 +11,7 @@ class SecretScanner:
     def __init__(self):
         self.secret_patterns = {
             "SECRET_AWS_KEY": {
-                "regex": re.compile(r'\b(AKIA[0-9A-Z]{16})\b'),
+                "regex": re.compile(r'\b(AKIA[0-9A-Z]{14,24})\b'),
                 "confidence": 0.99
             },
             "SECRET_OPENAI_KEY": {

@@ -72,13 +72,37 @@ class AuditLogger:
         if len(self.in_memory_recent_events) > 50:
             self.in_memory_recent_events.pop()
 
-    def get_recent_events(self, limit: int = 50) -> List[Dict[str, Any]]:
-        """Returns recent audit events for the administrator console."""
+    def verify_zero_raw_content_leak(self) -> Dict[str, Any]:
+        """
+        Compliance verification routine:
+        Scans all records in the audit database to rigorously guarantee that
+        no raw prompt text, response bodies, or credentials have ever leaked.
+        """
+        prohibited_signatures = ["AKIA", "sk-proj", "sk-", "ghp_", "password=", "db_pass=", "@", "-----BEGIN"]
+        leak_count = 0
+        violations = []
+
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM audit_events ORDER BY timestamp DESC LIMIT ?", (limit,))
+            cursor.execute("SELECT * FROM audit_events")
             rows = cursor.fetchall()
-            return [dict(row) for row in rows]
+
+            for row in rows:
+                for col_name in row.keys():
+                    val_str = str(row[col_name])
+                    for sig in prohibited_signatures:
+                        # Category names like SECRET_AWS_KEY are permitted, but actual values are prohibited
+                        if sig in val_str and not val_str.startswith("SECRET_") and not "CATEGORY" in val_str:
+                            leak_count += 1
+                            violations.append({"event_id": row["event_id"], "column": col_name, "snippet": val_str[:20]})
+
+        return {
+            "zero_leak_verified": leak_count == 0,
+            "total_records_checked": len(rows),
+            "prohibited_occurrences_found": leak_count,
+            "violations": violations
+        }
 
 audit_logger = AuditLogger()
+

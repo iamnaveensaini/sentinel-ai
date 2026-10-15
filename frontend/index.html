@@ -452,12 +452,14 @@
             let masked = text;
 
             // Secrets
-            if (/AKIA[0-9A-Z]{16}/.test(text)) { categories.push("SECRET_AWS_KEY"); isSecret = true; }
+            if (/AKIA[0-9A-Z]{14,24}/.test(text)) { categories.push("SECRET_AWS_KEY"); isSecret = true; }
             if (/sk-[a-zA-Z0-9-]{20,}/.test(text)) { categories.push("SECRET_OPENAI_KEY"); isSecret = true; }
-            if (/(?i)password\s*[:=]\s*["']?[^"'\s]{8,}/i.test(text)) { categories.push("SECRET_GENERIC_PASSWORD"); isSecret = true; }
+            if (/ghp_[a-zA-Z0-9]{36}|github_pat_[a-zA-Z0-9_]{50,}/.test(text)) { categories.push("SECRET_GITHUB_TOKEN"); isSecret = true; }
+            if (/-----BEGIN\s+(?:RSA|OPENSSH|DSA|EC)?\s*PRIVATE\s+KEY/.test(text)) { categories.push("SECRET_PRIVATE_KEY"); isSecret = true; }
+            if (/(?:password|passwd|db_pass|api_secret|auth_token)\s*[:=]\s*["']?[^"'\s]{8,}/i.test(text)) { categories.push("SECRET_GENERIC_PASSWORD"); isSecret = true; }
 
             // Injections
-            if (/ignore\s+(all\s+)?previous\s+instructions/i.test(text) || /act\s+as\s+DAN/i.test(text) || /reveal\s+(your\s+)?system\s+prompt/i.test(text)) {
+            if (/ignore\s+(all\s+)?previous\s+instructions/i.test(text) || /act\s+as\s+DAN/i.test(text) || /reveal\s+(your\s+)?system\s+prompt/i.test(text) || /developer\s+instructions/i.test(text) || /forget\s+previous\s+constraints/i.test(text) || /purani\s+instructions/i.test(text)) {
                 categories.push("PROMPT_INJECTION_OVERRIDE");
                 isInjection = true;
             }
