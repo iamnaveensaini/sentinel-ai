@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+
+# Environment files with secrets (NEVER COMMIT)
+.env
+.env.local
+*.pem
+*.key
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Frontend / Node
+node_modules/
+dist/
+npm-debug.log*
+
+# Output / Reports
+eval_results_*.json
+gateway_metrics_*.json
+*.log

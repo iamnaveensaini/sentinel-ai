@@ -1,0 +1,25 @@
+services:
+  sentinel-gateway:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+    container_name: sentinel_ai_gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=development
+      - LLM_PROVIDER=mock
+      - LLM_API_KEY=${LLM_API_KEY:-""}
+      - LLM_MODEL=gpt-4o-mini
+      - DATABASE_URL=sqlite:///./sentinel_audit.db
+      - LOG_RAW_CONTENT=false
+    volumes:
+      - ./backend:/app/backend
+      - ./frontend:/app/frontend
+      - ./tests:/app/tests
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped

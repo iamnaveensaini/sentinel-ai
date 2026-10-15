@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sentinel AI — 3-Member Work Division & AI Prompt Playbook</title>
+<style>
+    @page {
+        size: A4 portrait;
+        margin: 14mm 12mm 14mm 12mm;
+        @bottom-right {
+            content: counter(page);
+            font-size: 8pt;
+            color: #64748b;
+        }
+    }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        color: #1e293b;
+        background-color: #ffffff;
+        line-height: 1.45;
+        font-size: 9.5pt;
+        margin: 0;
+        padding: 0;
+    }
+    .page-break {
+        page-break-after: always;
+    }
+    .no-break {
+        page-break-inside: avoid;
+    }
+    
+    /* Cover / Header Section */
+    .header-box {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: #ffffff;
+        padding: 24px 28px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        border-bottom: 4px solid #0284c7;
+    }
+    .header-box h1 {
+        font-size: 20pt;
+        font-weight: 800;
+        margin: 0 0 4px 0;
+        letter-spacing: -0.5px;
+        color: #f8fafc;
+    }
+    .header-box .sub-title {
+        font-size: 11pt;
+        color: #38bdf8;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+    .header-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 8.5pt;
+        color: #94a3b8;
+        border-top: 1px solid #334155;
+        padding-top: 10px;
+        margin-top: 10px;
+    }
+
+    h2 {
+        font-size: 13pt;
+        font-weight: 700;
+        color: #0f172a;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 5px;
+        margin-top: 18px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+    }
+    h2 .num {
+        background-color: #0284c7;
+        color: white;
+        border-radius: 4px;
+        padding: 2px 7px;
+        font-size: 9pt;
+        margin-right: 8px;
+    }
+
+    h3 {
+        font-size: 10.5pt;
+        font-weight: 700;
+        color: #0369a1;
+        margin-top: 14px;
+        margin-bottom: 6px;
+    }
+
+    p {
+        margin: 0 0 8px 0;
+    }
+
+    /* Tables */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0 16px 0;
+        font-size: 8.5pt;
+    }
+    th {
+        background-color: #f1f5f9;
+        color: #0f172a;
+        font-weight: 700;
+        text-align: left;
+        padding: 7px 10px;
+        border: 1px solid #cbd5e1;
+    }
+    td {
+        padding: 6.5px 10px;
+        border: 1px solid #e2e8f0;
+        vertical-align: top;
+    }
+    tr:nth-child(even) td {
+        background-color: #f8fafc;
+    }
+
+    /* Badges */
+    .badge {
+        display: inline-block;
+        padding: 2px 7px;
+        border-radius: 4px;
+        font-size: 7.5pt;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+    .badge-blue { background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+    .badge-green { background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    .badge-red { background-color: #ffe4e6; color: #be123c; border: 1px solid #fecdd3; }
+    .badge-amber { background-color: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+
+    /* Callout Boxes */
+    .callout {
+        background-color: #f8fafc;
+        border-left: 4px solid #0284c7;
+        padding: 10px 14px;
+        border-radius: 0 6px 6px 0;
+        margin: 10px 0 14px 0;
+        font-size: 8.5pt;
+    }
+    .callout-title {
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 3px;
+    }
+    .callout-danger {
+        border-left-color: #e11d48;
+        background-color: #fff1f2;
+    }
+
+    /* Code & Prompts */
+    .prompt-box {
+        background-color: #0f172a;
+        color: #e2e8f0;
+        border-radius: 6px;
+        padding: 10px 12px;
+        margin: 8px 0 14px 0;
+        font-family: "JetBrains Mono", Consolas, "Courier New", monospace;
+        font-size: 8pt;
+        line-height: 1.4;
+        border: 1px solid #334155;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+    .prompt-header {
+        background-color: #1e293b;
+        color: #38bdf8;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 6px 6px 0 0;
+        font-size: 8pt;
+        border: 1px solid #334155;
+        border-bottom: none;
+        display: flex;
+        justify-content: space-between;
+    }
+    .prompt-box-wrapper {
+        margin: 8px 0 14px 0;
+    }
+    .prompt-box-wrapper .prompt-box {
+        margin-top: 0;
+        border-radius: 0 0 6px 6px;
+    }
+
+    /* Architecture diagram box */
+    .diagram-box {
+        background-color: #f1f5f9;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 12px 14px;
+        font-family: Consolas, monospace;
+        font-size: 8pt;
+        line-height: 1.35;
+        color: #0f172a;
+        margin: 10px 0;
+    }
+</style>
+</head>
+<body>
+
+    <!-- Header Box -->
+    <div class="header-box">
+        <h1>SENTINEL AI</h1>
+        <div class="sub-title">AI Data Leakage Prevention Gateway — 3-Member Engineering Blueprint & AI Prompts</div>
+        <p style="margin: 0; font-size: 9pt; color: #cbd5e1;">
+            Implementation Plan, Modular Responsibility Division, Separation of Concerns, and Turnkey AI Coding Prompts for pair programming with Cursor, ChatGPT-4o, Claude 3.5 Sonnet, and Antigravity.
+        </p>
+        <div class="header-meta">
+            <span><strong>Specification:</strong> PRD/SRS v2.0 MVP</span>
+            <span><strong>Team Size:</strong> 3 Members</span>
+            <span><strong>Date:</strong> 15 October 2026</span>
+            <span><strong>Status:</strong> Ready for Sprint 1</span>
+        </div>
+    </div>
+
+    <!-- Section 1 -->
+    <h2><span class="num">1</span> Executive Architecture & Core Security Guarantees</h2>
+    <p>
+        <strong>Sentinel AI</strong> is an enterprise application-layer security gateway mediating all interactions between authenticated client applications and Large Language Model (LLM) providers. It systematically eliminates the three primary channels of AI data leakage:
+    </p>
+    <ul>
+        <li><strong>Input Leakage:</strong> Sensitive PII (emails, phone numbers, Indian Aadhaar & PAN cards) and credentials (AWS keys, API tokens) pasted into prompts.</li>
+        <li><strong>Retrieval Leakage:</strong> Unauthorized document snippets fetched during RAG and injected into model context.</li>
+        <li><strong>Output Leakage:</strong> Model repeating internal credentials or memorized sensitive data in generated answers.</li>
+    </ul>
+
+    <div class="diagram-box">
+User Prompt (Client)
+  │
+  ▼ [1. Authentication] ───► Verify user identity & derive tenant / doc scopes
+  │
+  ▼ [2. Input Inspection] ──► Presidio + Regex: Email, Phone, Indian Aadhaar/PAN, AWS/API Keys, Injections
+  │
+  ▼ [3. Policy Engine] ────► Evaluate ALLOW / MASK / BLOCK
+  │    │
+  │    └─► IF BLOCK ───────► 🛑 TERMINATE IMMEDIATELY (Upstream Provider is NEVER called)
+  │
+  ▼ [4. Pre-Retrieval ACL] ─► Verify document permissions server-side BEFORE retrieval
+  │
+  ▼ [5. LLM Adapter] ──────► Call OpenAI / Groq / Anthropic or Offline Mock with Server-side Key
+  │
+  ▼ [6. Output Filter] ────► Inspect generated response; redact PII or block credential leaks
+  │
+  ▼ [7. Privacy Audit] ────► Store structured metadata (ZERO raw prompt or response in DB)
+  │
+Sanitized User Response
+    </div>
+
+    <div class="callout callout-danger no-break">
+        <div class="callout-title">The Cardinal Rule: Block-Before-Forward (FR-005)</div>
+        If a prompt receives a <code>BLOCK</code> decision due to credentials, API keys, or prompt injections, the upstream LLM provider <strong>must never be invoked</strong>. Automated security tests must strictly assert that provider call count is zero.
+    </div>
+
+    <!-- Section 2 -->
+    <h2><span class="num">2</span> 3-Member Work Division & Responsibility Matrix</h2>
+    <p>
+        To ensure zero merge conflicts and allow each team member to work independently using AI code generation tools, the codebase is partitioned into three decoupled modules:
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 14%;">Member</th>
+                <th style="width: 20%;">Operational Role</th>
+                <th style="width: 32%;">Owned Codebase Modules</th>
+                <th style="width: 34%;">Primary Deliverables</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Member 1</strong></td>
+                <td><span class="badge badge-red">Security Architect</span></td>
+                <td>
+                    <code>backend/auth/</code><br>
+                    <code>backend/detection/</code><br>
+                    <code>backend/policy/</code><br>
+                    <code>backend/gateway/orchestrator.py</code>
+                </td>
+                <td>
+                    Input screeners (Aadhaar, PAN, Emails, AWS keys, Prompt Injections); Policy Engine (ALLOW/MASK/BLOCK); Masking transformer; <strong>Block-Before-Forward</strong> test.
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Member 2</strong></td>
+                <td><span class="badge badge-blue">Integration Engineer</span></td>
+                <td>
+                    <code>backend/providers/</code><br>
+                    <code>backend/access_control/</code><br>
+                    <code>backend/retrieval/</code><br>
+                    <code>backend/output_filter/</code><br>
+                    <code>backend/api/routes.py</code>
+                </td>
+                <td>
+                    Server-side LLM Adapter (OpenAI/Groq/Mock); Pre-retrieval Document ACL; Post-generation Output Leak Filter; REST API chat and health endpoints.
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Member 3</strong></td>
+                <td><span class="badge badge-green">Full-Stack & QA</span></td>
+                <td>
+                    <code>backend/audit/</code><br>
+                    <code>backend/evaluation/</code><br>
+                    <code>frontend/</code> (Web UI)<br>
+                    <code>deploy/</code> & <code>compose.yaml</code>
+                </td>
+                <td>
+                    Privacy-Preserving Audit Logger (Zero-raw-leak); 120+ Case Evaluation Benchmark (Precision/Recall); Interactive Chat & Inspector UI; Docker Compose.
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="page-break"></div>
+
+    <!-- Section 3: Member 1 Breakdown -->
+    <h2><span class="num">3</span> Member 1 Deep Dive: Security Architect</h2>
+    <p><strong>Primary Objective:</strong> Intercept prompts, detect sensitive entities, apply policy precedence, and guarantee that blocked prompts never leave the server.</p>
+
+    <h3>Owned Files & Structure:</h3>
+    <ul>
+        <li><code>backend/auth/models.py</code> & <code>backend/auth/jwt.py</code>: JWT decoding and role claims (<code>end_user</code>, <code>policy_admin</code>).</li>
+        <li><code>backend/detection/pii_detector.py</code>: Regex and Presidio detectors for Email, Phone, Indian Aadhaar (12 digits), Indian PAN (`[A-Z]{5}[0-9]{4}[A-Z]`), Credit Cards, and Hinglish markers.</li>
+        <li><code>backend/detection/secret_scanner.py</code>: Regex patterns for AWS keys (`AKIA...`), OpenAI keys (`sk-...`), GitHub tokens, passwords.</li>
+        <li><code>backend/detection/injection_detector.py</code>: Heuristic detector for prompt jailbreaks, overrides, and system prompt leaks.</li>
+        <li><code>backend/policy/engine.py</code>: Precedence evaluation and right-to-left deterministic masking transformer.</li>
+        <li><code>backend/gateway/orchestrator.py</code>: Central gateway orchestrator.</li>
+        <li><code>tests/unit/test_detection.py</code> & <code>tests/security/test_block_before_forward.py</code>: Unit and security tests.</li>
+    </ul>
+
+    <h3>Member 1 AI Prompts (Copy-Paste Ready):</h3>
+
+    <div class="prompt-box-wrapper no-break">
+        <div class="prompt-header">
+            <span>PROMPT 1.1: PII & Indian Identifier Detector (Aadhaar, PAN, Phone)</span>
+            <span>Target: Cursor / Claude 3.5 Sonnet</span>
+        </div>
+        <div class="prompt-box">You are an expert Python security engineer working on Sentinel AI (an AI Data Leakage Prevention Gateway).
+Write `backend/detection/pii_detector.py`:
+1. Implement detection for:
+   - Emails (RFC 5322 regex)
+   - Indian Mobile Numbers (+91, 91, or 10 digits starting with 6-9)
+   - Credit Cards (15-16 digits)
+   - Indian Aadhaar Numbers (12 digits: XXXX XXXX XXXX or 12 continuous digits; exclude repeated digits like 0000 0000 0000)
+   - Indian PAN Cards (5 uppercase letters + 4 digits + 1 uppercase letter, e.g., ABCDE1234F)
+2. Add support for Hinglish context cues ("mera aadhaar", "apna phone", "card number") that boost confidence score.
+3. Return a list of `DetectedSpan` dataclass objects with: category, start, end, matched_text, confidence, and replacement token (e.g. &lt;AADHAAR_REDACTED&gt;).
+4. Include clean pytest unit tests in `tests/unit/test_detection.py`.</div>
+    </div>
+
+    <div class="prompt-box-wrapper no-break">
+        <div class="prompt-header">
+            <span>PROMPT 1.2: Secret Scanner & Prompt Injection Detector</span>
+            <span>Target: Cursor / ChatGPT-4o</span>
+        </div>
+        <div class="prompt-box">You are a security engineer implementing credential and jailbreak defense for Sentinel AI.
+Create two Python modules:
+1. `backend/detection/secret_scanner.py`:
+   - Detect AWS keys (AKIA[0-9A-Z]{16})
+   - Detect OpenAI keys (sk-[a-zA-Z0-9-]{20,})
+   - Detect GitHub tokens (ghp_[a-zA-Z0-9]{36})
+   - Detect Private Keys (-----BEGIN RSA/OPENSSH PRIVATE KEY-----)
+   - Detect plain passwords (password="...", db_pass="...")
+2. `backend/detection/injection_detector.py`:
+   - Detect direct prompt injection patterns: "ignore previous instructions", "you are now DAN", "reveal system prompt", "bypass safety filters".
+3. Write test cases verifying that normal coding questions are NOT falsely flagged.</div>
+    </div>
+
+    <div class="prompt-box-wrapper no-break">
+        <div class="prompt-header">
+            <span>PROMPT 1.3: Policy Engine & Block-Before-Forward Orchestrator</span>
+            <span>Target: Claude 3.5 Sonnet / Antigravity</span>
+        </div>
+        <div class="prompt-box">Implement `backend/policy/engine.py` and `backend/gateway/orchestrator.py` for Sentinel AI.
+Requirements:
+1. Policy Precedence:
+   - If any SECRET or PROMPT_INJECTION is detected -> Decision is BLOCK. Sanitized prompt is None.
+   - If PII detected -> Decision is MASK. Transform text by replacing spans in REVERSE index order (right-to-left) to avoid offset shifting.
+   - If clean -> Decision is ALLOW.
+2. Gateway Orchestrator:
+   - Call detectors -> evaluate policy.
+   - ENFORCE BLOCK-BEFORE-FORWARD (FR-005): If BLOCK, stop immediately. DO NOT invoke provider adapter. Log metadata audit event with provider_called=False.
+   - If ALLOW/MASK, invoke provider adapter and output sanitizer.
+3. Write `tests/security/test_block_before_forward.py`: Assert that when a prompt contains an AWS key, provider_adapter.invocation_count remains 0!</div>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- Section 4: Member 2 Breakdown -->
+    <h2><span class="num">4</span> Member 2 Deep Dive: Integration & Retrieval Engineer</h2>
+    <p><strong>Primary Objective:</strong> Build the server-side LLM provider integration, enforce document permissions before RAG retrieval, and inspect model outputs for leaks.</p>
+
+    <h3>Owned Files & Structure:</h3>
+    <ul>
+        <li><code>backend/providers/base.py</code> & <code>backend/providers/adapter.py</code>: Upstream provider caller (OpenAI, Groq, Anthropic) with local mock fallback, timeouts, and invocation counters.</li>
+        <li><code>backend/access_control/acl.py</code>: Pre-retrieval authorization checking user role and allowed document scopes.</li>
+        <li><code>backend/retrieval/doc_store.py</code>: Document catalog (<code>public</code>, <code>marketing_general</code>, <code>hr_confidential</code>, <code>financial_records</code>); wraps documents in untrusted data delimiters.</li>
+        <li><code>backend/output_filter/sanitizer.py</code>: Inspects provider output before returning to user; redacts PII or blocks credential regurgitation.</li>
+        <li><code>backend/api/routes.py</code>: REST API endpoints: <code>POST /v1/chat/completions</code>, <code>GET /health/live</code>, <code>GET /health/ready</code>.</li>
+        <li><code>tests/security/test_acl.py</code>: Tests verifying pre-retrieval scope enforcement.</li>
+    </ul>
+
+    <h3>Member 2 AI Prompts (Copy-Paste Ready):</h3>
+
+    <div class="prompt-box-wrapper no-break">
+        <div class="prompt-header">
+            <span>PROMPT 2.1: Server-Side LLM Provider Adapter with Mock Fallback</span>
+            <span>Target: Cursor / Claude 3.5 Sonnet</span>
+        </div>
+        <div class="prompt-box">You are writing the LLM integration layer for Sentinel AI at `backend/providers/adapter.py`.
+Requirements:
+1. Class `LLMProviderAdapter(BaseLLMProvider)`:
+   - Support OpenAI and Groq APIs via HTTPX using server-side keys (LLM_API_KEY).
+   - Server-side key must never be exposed in client responses or logs.
+   - Enforce configurable timeout (REQUEST_TIMEOUT_SECONDS, default 15s).
+2. Offline Mock Fallback:
+   - If LLM_PROVIDER=mock or API key is unset, generate realistic contextual answers locally without network calls.
+3. Security Verification Attribute:
+   - Track `self.invocation_count` so security test suites can verify whether the model was invoked.</div>
+    </div>
+
+    <div class="prompt-box-wrapper no-break">
+        <div class="prompt-header">
+            <span>PROMPT 2.2: Pre-Retrieval Document ACL & RAG Isolation</span>
+            <span>Target: Cursor / ChatGPT-4o</span>
+        </div>
+        <div class="prompt-box">Implement `backend/access_control/acl.py` and `backend/retrieval/doc_store.py` for Sentinel AI.
+Requirements:
+1. FR-008 Compliance: Document authorization MUST be checked in backend code BEFORE retrieval. The LLM must NEVER decide document permissions.
+2. `AccessControlService`:
+   - Checks if user's `allowed_doc_scopes` contains the requested scope.
+3. `DocumentStore`:
+   - Store mock documents classified as: "public", "marketing_general", "hr_confidential", "financial_records".
+   - `retrieve(user, requested_scopes)`: Filters documents against authorized scopes and omits forbidden docs BEFORE context construction.
+   - Wrap retrieved text in untrusted context boundary tags to guard against indirect prompt injection.
+4. Write `tests/security/test_acl.py`: Verify that a standard user with ["public"] scope cannot retrieve HR confidential files.</div>
+    </div>
+
+    <div class="prompt-box-wrapper no-break">
+        <div class="prompt-header">
+            <span>PROMPT 2.3: Post-Generation Output Sanitizer & FastAPI Endpoints</span>
+            <span>Target: Claude 3.5 Sonnet / Antigravity</span>
+        </div>
+        <div class="prompt-box">Write `backend/output_filter/sanitizer.py` and `backend/api/routes.py` for Sentinel AI.
+Requirements:
+1. Output Sanitizer:
+   - Scan model responses. If the model outputs secrets/passwords, block the entire response and return a security warning.
+   - If the model outputs PII (emails, phone, Aadhaar/PAN), redact them before returning.
+   - Enforce fail-closed safety: on unexpected errors, never return uninspected raw text.
+2. FastAPI Routes:
+   - `POST /v1/chat/completions`: Accepts GatewayRequest, calls orchestrator, returns GatewayResponse.
+   - `GET /health/live`: 200 OK without disclosing secrets.
+   - `GET /health/ready`: Checks DB and policy engine readiness.</div>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- Section 5: Member 3 Breakdown -->
+    <h2><span class="num">5</span> Member 3 Deep Dive: Full-Stack & QA Engineer</h2>
+    <p><strong>Primary Objective:</strong> Guarantee zero-leakage audit logging, build the 120+ case evaluation benchmark, construct the interactive Web UI, and handle Dockerization.</p>
+
+    <h3>Owned Files & Structure:</h3>
+    <ul>
+        <li><code>backend/audit/models.py</code> & <code>backend/audit/logger.py</code>: Privacy-preserving metadata audit logger (SQLite); strictly guarantees zero raw prompt or response logging.</li>
+        <li><code>tests/evaluation_corpus/dataset.json</code>: 120+ curated security, PII, secret, and Hinglish test cases.</li>
+        <li><code>backend/evaluation/benchmark.py</code>: Benchmark runner computing Precision, Recall, False-Positive Rate, Prevention Rate, Latency ($p_{50}$, $p_{95}$), and verifying zero raw leaks in the DB.</li>
+        <li><code>frontend/index.html</code>: Modern Single Page Application with interactive chat, real-time security decision badge, "What the LLM received" diff view, role switcher, and live audit log drawer.</li>
+        <li><code>deploy/Dockerfile</code> & <code>compose.yaml</code>: Docker setup for one-command execution.</li>
+    </ul>
+
+    <h3>Member 3 AI Prompts (Copy-Paste Ready):</h3>
+
+    <div class="prompt-box-wrapper no-break">
+        <div class="prompt-header">
+            <span>PROMPT 3.1: Zero-Leakage Metadata Audit Logger</span>
+            <span>Target: Cursor / Claude 3.5 Sonnet</span>
+        </div>
+        <div class="prompt-box">Implement `backend/audit/logger.py` and `backend/audit/models.py` for Sentinel AI.
+CRITICAL PRIVACY RULE: Default logs must contain ZERO raw prompt text, ZERO raw LLM output, and ZERO credentials.
+Requirements:
+1. Define `AuditEvent` schema: event_id, timestamp, tenant_id, pseudonymous_user_id, action_taken (ALLOW/MASK/BLOCK), rule_categories, policy_version, provider_called, gateway_latency_ms, total_latency_ms.
+2. Persist metadata to SQLite table `audit_events` and keep recent 50 events in memory for fast UI polling.
+3. Implement `get_recent_events(limit)` for admin dashboard queries.
+4. Add verification logic that checks the DB to ensure no raw secrets or PII strings ever exist in any column.</div>
+    </div>
+
+    <div class="prompt-box-wrapper no-break">
+        <div class="prompt-header">
+            <span>PROMPT 3.2: 120+ Case Evaluation Dataset & Benchmark Runner</span>
+            <span>Target: Cursor / ChatGPT-4o</span>
+        </div>
+        <div class="prompt-box">Create the automated security evaluation suite for Sentinel AI:
+1. `tests/evaluation_corpus/dataset.json`:
+   - 120+ test cases across: benign queries, PII (email, phone, credit card), Indian Aadhaar & PAN cards, secrets (AWS, OpenAI, GitHub, passwords), prompt injections (DAN, jailbreaks), and Hinglish prompts.
+2. `backend/evaluation/benchmark.py`:
+   - Execute all dataset cases against `gateway_orchestrator.process_chat()`.
+   - Calculate and display:
+     * Precision (TP / (TP + FP))
+     * Recall (TP / (TP + FN))
+     * False-Positive Rate (FPR)
+     * Secret Prevention Rate (Must be 100%)
+     * Gateway Latency Overhead (p50 and p95 in ms)
+     * Raw Content Check in DB (Must be 0)
+   - Save summary to `eval_results_latest.json`.</div>
+    </div>
+
+    <div class="prompt-box-wrapper no-break">
+        <div class="prompt-header">
+            <span>PROMPT 3.3: Interactive Web Chat & Security Inspector Frontend</span>
+            <span>Target: Claude 3.5 Sonnet / Antigravity</span>
+        </div>
+        <div class="prompt-box">Build a modern, dark-mode Single Page Application at `frontend/index.html` using Tailwind CSS and Vanilla JS.
+Features:
+1. Left Panel (Chat Stream):
+   - Instant test scenario buttons: "Benign Code", "Aadhaar + Phone (MASK)", "PAN + Card (MASK)", "AWS Key (BLOCK)", "Prompt Injection", "Hinglish PII".
+   - Clean chat message history with user and AI bubbles.
+2. Right Panel (Gateway Security Inspector):
+   - Decision Badge: ALLOW (green), MASK (amber), BLOCK (red).
+   - "Provider Called?" Indicator: Green pulse (Yes) vs Red shield (NO - Blocked before forward).
+   - Gateway Latency overhead display (ms).
+   - Triggered threat/PII category chips.
+   - "What the LLM Received" diff view showing masked text or block explanation.
+3. Top Navigation:
+   - Role switcher ("End User" vs "Security Reviewer/Admin").
+   - Doc scope selector ("None", "Public", "HR Confidential", "Financial").
+   - "Audit Logs" button opening a modal with live structured metadata table.
+4. Dual-Mode Fallback: If port 8000 is running, fetch from API; otherwise run client-side emulation so the team can demo immediately!</div>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- Section 6: Sprint Plan & Git Workflow -->
+    <h2><span class="num">6</span> 5-Week Sprint Roadmap & Integration Checkpoints</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 10%;">Week</th>
+                <th style="width: 25%;">Milestone Focus</th>
+                <th style="width: 20%;">Member 1 Focus</th>
+                <th style="width: 20%;">Member 2 Focus</th>
+                <th style="width: 25%;">Member 3 Focus</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Week 1</strong></td>
+                <td><strong>Vertical Slice & Skeleton</strong></td>
+                <td>FastAPI app setup, JWT models, request validation schemas.</td>
+                <td>Provider adapter with mock fallback and request timeout.</td>
+                <td>Repository setup, SQLite schema, zero-raw-log design.</td>
+            </tr>
+            <tr>
+                <td><strong>Week 2</strong></td>
+                <td><strong>Detection & ACL Engine</strong></td>
+                <td>PII (Email/Phone/Aadhaar/PAN) and secret scanners.</td>
+                <td>Pre-retrieval ACL logic and document store catalog.</td>
+                <td>Curate first 50 cases in evaluation dataset.</td>
+            </tr>
+            <tr>
+                <td><strong>Week 3</strong></td>
+                <td><strong>Enforcement & Filtering</strong></td>
+                <td>Policy engine, right-to-left masking, block-before-forward.</td>
+                <td>Output sanitizer and post-generation leak inspection.</td>
+                <td>Evaluation metrics runner (Precision/Recall calculations).</td>
+            </tr>
+            <tr>
+                <td><strong>Week 4</strong></td>
+                <td><strong>Hinglish & Benchmark</strong></td>
+                <td>Hinglish detectors and injection override heuristics.</td>
+                <td>REST endpoints finalized and error boundaries secured.</td>
+                <td>Expand to 120+ cases; run benchmark; verify 0 DB leaks.</td>
+            </tr>
+            <tr>
+                <td><strong>Week 5</strong></td>
+                <td><strong>UI, Docker & Live Demo</strong></td>
+                <td>Adversarial test review and security edge cases.</td>
+                <td>Connect live OpenAI/Groq API key for production demo.</td>
+                <td>Polish Web UI, build Docker image, record live demo.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2><span class="num">7</span> Git Branching Strategy & Collaboration Workflow</h2>
+    <p>To avoid conflicts while all 3 members work concurrently:</p>
+    <ul>
+        <li><code>main</code>: Production-ready baseline. All tests must pass before merging.</li>
+        <li><code>feature/member1-gateway-detection</code>: Owned by Member 1 (Auth, Detection, Policy, Orchestrator).</li>
+        <li><code>feature/member2-provider-acl</code>: Owned by Member 2 (LLM Adapter, ACL, DocStore, Output Filter).</li>
+        <li><code>feature/member3-audit-ui-eval</code>: Owned by Member 3 (Audit Logger, Benchmark Suite, Web UI, Docker).</li>
+    </ul>
+
+    <div class="callout no-break">
+        <div class="callout-title">Standard Pull Request (PR) Acceptance Checklist:</div>
+        1. <code>pytest tests/ -v</code> passes with 0 failures.<br>
+        2. Block-Before-Forward test confirms provider call count is 0 on blocked prompts.<br>
+        3. Pre-retrieval ACL test confirms unauthorized documents are omitted.<br>
+        4. Audit DB verification confirms 0 raw sensitive prompts exist in storage.
+    </div>
+
+    <div style="margin-top: 30px; padding: 14px; background-color: #f1f5f9; border-radius: 8px; text-align: center; font-size: 8.5pt; color: #64748b;">
+        <strong>Sentinel AI Engineering Blueprint</strong> • Generated for Academic & Enterprise Project Collaboration • October 2026
+    </div>
+
+</body>
+</html>
