@@ -138,7 +138,7 @@ async def run_evaluation(dataset_path: str = "tests/evaluation_corpus/dataset.js
     
     with open("eval_results_latest.json", "w", encoding="utf-8") as f:
         json.dump(results_summary, f, indent=2)
-    print("\n[✓] Results persisted to eval_results_latest.json\n")
+    print("\n[+] Results persisted to eval_results_latest.json\n")
 
 if __name__ == "__main__":
     asyncio.run(run_evaluation())

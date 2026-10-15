@@ -1,9 +1,9 @@
 """
 Sentinel AI - Policy Enforcement Engine
 Applies strict security precedence to all detector findings:
-1. Secrets / Credentials -> BLOCK immediately (Provider is NEVER called)
-2. Direct Prompt Injection -> BLOCK immediately
-3. Personal Identifiable Information (PII) -> MASK before provider submission
+1. Secrets / Credentials -> BLOCK immediately (sanitized_prompt = None, Provider is NEVER called)
+2. Direct Prompt Injection -> BLOCK immediately (sanitized_prompt = None, Provider is NEVER called)
+3. Personal Identifiable Information (PII) -> MASK before provider submission (reverse-offset replacement)
 4. Clean Request -> ALLOW
 """
 from typing import List
@@ -17,6 +17,7 @@ class PolicyEngine:
     def evaluate(self, original_text: str, spans: List[DetectedSpan]) -> PolicyDecision:
         """
         Evaluates detected spans and returns a deterministic PolicyDecision.
+        Enforces strict security precedence: BLOCK > MASK > ALLOW.
         """
         if not spans:
             return PolicyDecision(
@@ -27,13 +28,13 @@ class PolicyEngine:
                 categories_triggered=[]
             )
 
-        categories = list({span.category for span in spans})
+        categories = sorted(list({span.category for span in spans}))
         has_secret = any(c.startswith("SECRET_") for c in categories)
         has_injection = any(c.startswith("PROMPT_INJECTION_") for c in categories)
 
-        # Precedence Rule 1: Secrets or Injections must be strictly BLOCKED
+        # Precedence Rule 1: Any secret or injection must be strictly BLOCKED
         if has_secret or has_injection:
-            reasons = []
+            reasons: List[str] = []
             if has_secret:
                 reasons.append("PROHIBITED_CREDENTIAL_DETECTED")
             if has_injection:
@@ -42,12 +43,12 @@ class PolicyEngine:
             return PolicyDecision(
                 action=PolicyAction.BLOCK,
                 reason_codes=reasons,
-                sanitized_prompt=None, # Never forward blocked content
+                sanitized_prompt=None,  # Cardinal Guarantee: Never forward blocked prompts upstream
                 policy_version=self.version,
                 categories_triggered=categories
             )
 
-        # Precedence Rule 2: PII is MASKED before forwarding
+        # Precedence Rule 2: PII detected -> MASK before forwarding
         masked_prompt = self.mask_text(original_text, spans)
         return PolicyDecision(
             action=PolicyAction.MASK,
@@ -59,12 +60,25 @@ class PolicyEngine:
 
     def mask_text(self, text: str, spans: List[DetectedSpan]) -> str:
         """
-        Replaces detected spans from right to left to prevent index shifting.
+        Replaces detected spans in REVERSE order of appearance (right-to-left)
+        so substring offsets do not shift.
         """
-        # Sort in reverse order of appearance
+        if not spans:
+            return text
+
+        # Sort in reverse order of appearance (right-to-left)
         sorted_spans = sorted(spans, key=lambda s: s.start, reverse=True)
-        result = text
+
+        # Ensure non-overlapping spans during replacement
+        filtered_spans: List[DetectedSpan] = []
+        last_start = len(text) + 1
         for span in sorted_spans:
+            if span.end <= last_start:
+                filtered_spans.append(span)
+                last_start = span.start
+
+        result = text
+        for span in filtered_spans:
             result = result[:span.start] + span.replacement + result[span.end:]
         return result
 

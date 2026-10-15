@@ -15,7 +15,7 @@ class SecretScanner:
                 "confidence": 0.99
             },
             "SECRET_OPENAI_KEY": {
-                "regex": re.compile(r'\b(sk-[a-zA-Z0-9]{20,T3BlbkFJ[a-zA-Z0-9]{20,}|sk-proj-[a-zA-Z0-9_-]{30,}|sk-[a-zA-Z0-9]{32,})\b'),
+                "regex": re.compile(r'\b(sk-[a-zA-Z0-9_-]{20,})\b'),
                 "confidence": 0.99
             },
             "SECRET_GITHUB_TOKEN": {
@@ -23,23 +23,23 @@ class SecretScanner:
                 "confidence": 0.99
             },
             "SECRET_PRIVATE_KEY": {
-                "regex": re.compile(r'-----BEGIN\s+(?:RSA|OPENSSH|DSA|EC|PGP)?\s*PRIVATE\s+KEY[^-]*-----'),
+                "regex": re.compile(r'-----BEGIN\s+(?:RSA|EC|DSA|OPENSSH)?\s*PRIVATE\s+KEY[^-]*-----'),
                 "confidence": 1.00
             },
-            "SECRET_GENERIC_PASSWORD": {
-                "regex": re.compile(r'(?i)\b(?:password|passwd|db_pass|api_secret|auth_token)\s*[:=]\s*["\']?([a-zA-Z0-9!@#$%^&*()_+=-]{8,})["\']?'),
-                "confidence": 0.92
+            "SECRET_PASSWORD": {
+                "regex": re.compile(r'(?i)\b(password|passwd|db_pass|api_secret)\s*[:=]\s*["\']?([^\s"\']{8,})["\']?'),
+                "confidence": 0.95
             }
         }
 
     def scan(self, text: str) -> List[DetectedSpan]:
         """
-        Scans text for secrets and credentials.
+        Scans text for secrets, API credentials, and cryptographic keys.
         """
-        findings: List[DetectedSpan] = []
+        raw_findings: List[DetectedSpan] = []
         for category, config in self.secret_patterns.items():
             for match in config["regex"].finditer(text):
-                findings.append(DetectedSpan(
+                raw_findings.append(DetectedSpan(
                     category=category,
                     start=match.start(),
                     end=match.end(),
@@ -47,6 +47,21 @@ class SecretScanner:
                     confidence=config["confidence"],
                     replacement="<SECRET_BLOCKED>"
                 ))
-        return findings
+
+        # Sort and resolve any overlaps
+        raw_findings.sort(key=lambda s: (s.start, -s.confidence))
+        resolved: List[DetectedSpan] = []
+        for current in raw_findings:
+            if not resolved:
+                resolved.append(current)
+                continue
+            last = resolved[-1]
+            if current.start < last.end:
+                if current.confidence > last.confidence:
+                    resolved[-1] = current
+            else:
+                resolved.append(current)
+
+        return resolved
 
 secret_scanner = SecretScanner()
